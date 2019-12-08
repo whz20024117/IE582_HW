@@ -2,6 +2,8 @@ from models import *
 import pandas as pd
 from urllib.parse import urlparse
 import numpy as np
+import pickle
+import matplotlib.pyplot as plt
 
 
 BOW = load_bow()
@@ -20,7 +22,30 @@ labels = labels[shuffle]
 
 split = int(0.8*len(labels))
 
-model.train(headlines[:split], labels[:split], epochs=10)
+history = model.train(headlines[:split], labels[:split], epochs=15)
+
+np.save('./save/acc.npy', history.history['accuracy'])
+np.save('./save/loss.npy', history.history['loss'])
+
+# Plot training & validation accuracy values
+plt.plot(history.history['accuracy'])
+#plt.plot(history.history['val_acc'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+# Plot training & validation loss values
+plt.plot(history.history['loss'])
+#plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+model.save()
 acc, cm = model.test(headlines[split:], labels[split:])
 print(acc)
 print(cm)

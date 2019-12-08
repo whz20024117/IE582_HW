@@ -37,7 +37,8 @@ class FakeNewsModel:
         self.max_len = max_len
         self.model = self._build()
         self.model.compile(optimizer=tf.keras.optimizers.Adam(lr),
-                           loss=tf.keras.losses.BinaryCrossentropy())
+                           loss=tf.keras.losses.BinaryCrossentropy(),
+                           metrics=['accuracy'])
         self.model.summary()
 
     def _build(self):
@@ -91,3 +92,11 @@ class FakeNewsModel:
         cm = confusion_matrix(y, pred)
 
         return acc, cm
+
+    def load(self, path='./save/model.ckpt'):
+        self.model.load_weights(path)
+        print('Weights loaded')
+
+    def save(self, path='./save/model.ckpt'):
+        self.model.save_weights(path)
+        print('Weights saved')
