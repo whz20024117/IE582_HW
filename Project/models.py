@@ -2,8 +2,9 @@ import tensorflow as tf
 import numpy as np
 from keras.preprocessing.text import tokenizer_from_json
 from tensorflow.keras import Model
-from tensorflow.keras.layers import LSTM, Dense, TimeDistributed, Bidirectional, Input, Embedding
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Input, Embedding
 import json
+from sklearn.metrics import confusion_matrix
 
 
 # Some helper functions
@@ -47,6 +48,7 @@ class FakeNewsModel:
         if len(self.lstm_units)>1:
             for p in self.lstm_units[:-1]:
                 out = LSTM(p, return_sequences=True, activation='relu')(out)
+                out = Dropout(0.3)(out)
             out = LSTM(self.lstm_units[-1], activation='relu')(out)
         elif len(self.lstm_units)==1:
             out = LSTM(self.lstm_units[-1], activation='relu')(out)
@@ -64,6 +66,28 @@ class FakeNewsModel:
     def train(self, data, label, batch_sz=32, epochs=20):
         x = self.bow.texts_to_sequences(data)
         x = pad_seq(x, self.max_len)
-        y = np.array(label, dtype=np.float)
+        y = np.array(label, dtype=np.float).reshape([-1, 1])
 
-        self.model.fit(x, y, batch_size=batch_sz, epochs=epochs)
+        return self.model.fit(x, y, batch_size=batch_sz, epochs=epochs)
+
+    def predict(self, data):
+        x = self.bow.texts_to_sequences(data)
+        x = pad_seq(x, self.max_len)
+
+        return self.model.predict(x)
+
+    def test(self, data, label):
+        x = self.bow.texts_to_sequences(data)
+        x = pad_seq(x, self.max_len)
+        y = np.array(label, dtype=np.float).flatten()
+
+        pred = self.model.predict(x).flatten()
+        pred = np.array(list(map(lambda p: 0 if p < 0.5 else 1, pred)))
+
+        assert len(pred.shape) == 1
+        assert pred.shape == y.shape
+
+        acc = np.float(sum(pred == y))/float(len(pred))
+        cm = confusion_matrix(y, pred)
+
+        return acc, cm
