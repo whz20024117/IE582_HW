@@ -8,8 +8,8 @@ from sklearn.metrics import confusion_matrix
 
 
 # Some helper functions
-def load_bow(path='./data/bow.json'):
-    with open('./data/bow.json') as f:
+def load_bow(path):
+    with open(path) as f:
         _bow = json.load(f)
     bow = tokenizer_from_json(_bow)
 
@@ -100,3 +100,4 @@ class FakeNewsModel:
     def save(self, path='./save/model.ckpt'):
         self.model.save_weights(path)
         print('Weights saved')
+

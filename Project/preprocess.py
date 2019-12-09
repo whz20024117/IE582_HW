@@ -7,7 +7,7 @@ import json
 
 def main():
     data = pd.read_csv('data/data.csv')
-    data['agent'] = data['URLs'].apply(lambda x: urlparse(x)[1])
+    data['agent_classification'] = data['URLs'].apply(lambda x: urlparse(x)[1])
 
     headlines = data['Headline'].tolist()
     labels = data['Label'].tolist()
